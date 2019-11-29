@@ -32,7 +32,10 @@
         }
     },
     "lint-staged": {
-        "*.js": ["eslint --fix", "git add"]
+        "*.js": [
+            "eslint --fix",
+            "git add"
+        ]
     },
     "devDependencies": {
         "babel-eslint": "^10.0.3",

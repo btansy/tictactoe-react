@@ -27,14 +27,23 @@ class Board extends React.Component {
         let x = 'X';
         let o = 'O';
         squares[i] = this.state.xIsNext ? x : o;
+
         this.setState({
             squares: squares,
             xIsNext: !this.state.xIsNext,
         });
+        let xIs = this.state.xIsNext;
+        this.props.onToggleX(xIs);
     }
 
     renderSquare(i) {
-        return <Square value={this.state.squares[i]} onClick={() => this.handleClick(i)} />;
+        return (
+            <Square
+                extraClass={this.state.xIsNext ? 'revert' : ''}
+                value={this.state.squares[i]}
+                onClick={() => this.handleClick(i)}
+            />
+        );
     }
 
     render() {
@@ -69,15 +78,23 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            classes: 'game'
+        }
+    }
+
+    onToggleX = x => {
+        this.setState({
+            classes: x ? 'revert game' : 'game'
+        });
+    };
     render() {
         return (
-            <div className="game">
+            <div className={this.state.classes}>
                 <div className="game-board">
-                    <Board />
-                </div>
-                <div className="game-info">
-                    <div>{/* status */}</div>
-                    <ol>{/* TODO */}</ol>
+                    <Board onToggleX={this.onToggleX} />
                 </div>
             </div>
         );
