@@ -1,14 +1,21 @@
-name: CI
-
+name: Build and Deploy
 on: [push]
-
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: GitHub Pages
-      uses: crazy-max/ghaction-github-pages@v1.2.5
+    - name: Checkout
+      uses: actions/checkout@v1
+    
+    - name: Install Dependencies and build
+      run: |
+        yarn install
+        yarn build
+
+    - name: Build and Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
-        build_dir: build
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BASE_BRANCH: master # The branch the action should deploy from.
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: build # The folder the action should deploy.
