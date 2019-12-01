@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import ReactTooltip from 'react-tooltip';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFile, faUndo, faRedo } from '@fortawesome/free-solid-svg-icons';
 
 function Square(props) {
     return (
@@ -14,26 +17,77 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            move: 0,
             squares: Array(9).fill(null),
+            squaresHistory: Array(9).fill(null),
             xIsNext: true,
         };
     }
 
     handleClick(i) {
         const squares = this.state.squares.slice();
+        const squaresHistory = this.state.squaresHistory.slice();
+
         if (calculateWinner(squares) || squares[i]) {
             return;
         }
+
         let x = 'X';
         let o = 'O';
+
+        let move = this.state.move;
+        squaresHistory[move] = this.state.squares;
+        move++;
         squares[i] = this.state.xIsNext ? x : o;
 
         this.setState({
+            move: move,
             squares: squares,
+            squaresHistory: squaresHistory,
             xIsNext: !this.state.xIsNext,
         });
-        let xIs = this.state.xIsNext;
-        this.props.onToggleX(xIs);
+
+        this.props.onToggleX(this.state.xIsNext);
+    }
+
+    handleUndo() {
+        let move = this.state.move;
+
+        const squaresHistory = this.state.squaresHistory.slice();
+        squaresHistory[move] = this.state.squares;
+
+        --move;
+        this.setState({
+            move: move,
+            squares: this.state.squaresHistory[move],
+            squaresHistory: squaresHistory,
+            xIsNext: !this.state.xIsNext,
+        });
+
+        this.props.onToggleX(this.state.xIsNext);
+    }
+
+    handleRedo() {
+        let move = this.state.move;
+        move++;
+        this.setState({
+            move: move,
+            squares: this.state.squaresHistory[move],
+            xIsNext: !this.state.xIsNext,
+        });
+
+        this.props.onToggleX(this.state.xIsNext);
+    }
+
+    handleNewGame() {
+        this.setState({
+            move: 0,
+            squares: Array(9).fill(null),
+            squaresHistory: Array(9).fill(null),
+            xIsNext: true,
+        });
+
+        this.props.onToggleX(this.state.xIsNext);
     }
 
     renderSquare(i) {
@@ -72,6 +126,31 @@ class Board extends React.Component {
                     {this.renderSquare(7)}
                     {this.renderSquare(8)}
                 </div>
+                <div className="icons">
+                    <button
+                        data-tip="Undo"
+                        className="function-button"
+                        disabled={this.state.move === 0}
+                        onClick={() => this.handleUndo()}>
+                        <FontAwesomeIcon icon={faUndo} size="4x" />
+                    </button>
+                    <ReactTooltip place="bottom" type="info" effect="float" />
+                    <button
+                        data-tip="Redo"
+                        className="function-button"
+                        disabled={this.state.squaresHistory[this.state.move + 1] === null}
+                        onClick={() => this.handleRedo()}>
+                        <FontAwesomeIcon icon={faRedo} size="4x" />
+                    </button>
+                    <ReactTooltip place="bottom" type="info" effect="float" />
+                    <button
+                        data-tip="New Game"
+                        className="function-button"
+                        onClick={() => this.handleNewGame()}>
+                        <FontAwesomeIcon icon={faFile} size="4x" />
+                    </button>
+                    <ReactTooltip place="bottom" type="warning" effect="float" />
+                </div>
             </div>
         );
     }
@@ -81,13 +160,13 @@ class Game extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            classes: 'game'
-        }
+            classes: 'game',
+        };
     }
 
     onToggleX = x => {
         this.setState({
-            classes: x ? 'revert game' : 'game'
+            classes: x ? 'revert game' : 'game',
         });
     };
     render() {
